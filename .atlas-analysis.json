@@ -1,0 +1,91 @@
+{
+  "projectType": "api-service",
+  "projectName": "Cafe Acacias Ecommerce API",
+  "projectDescription": "A Strapi-powered REST API backend for the Cafe Acacias ecommerce platform, managing products, categories, orders, wishlists, addresses, and user authentication.",
+  "theme": "almond",
+  "primaryColor": "#5049fc",
+  "lightColor": "#a49cfc",
+  "darkColor": "#242365",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "quickstart", "authentication"]
+          },
+          {
+            "group": "Configuration",
+            "pages": ["configuration/environment", "configuration/database", "configuration/email"]
+          },
+          {
+            "group": "Data Models",
+            "pages": ["models/product", "models/category", "models/order", "models/address", "models/wishlist"]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Products",
+            "pages": ["api/products/list", "api/products/get", "api/products/create", "api/products/update", "api/products/delete"]
+          },
+          {
+            "group": "Categories",
+            "pages": ["api/categories/list", "api/categories/get", "api/categories/create"]
+          },
+          {
+            "group": "Orders",
+            "pages": ["api/orders/list", "api/orders/get", "api/orders/payment"]
+          },
+          {
+            "group": "Addresses",
+            "pages": ["api/addresses/list", "api/addresses/create", "api/addresses/update", "api/addresses/delete"]
+          },
+          {
+            "group": "Wishlist",
+            "pages": ["api/wishlist/list", "api/wishlist/add", "api/wishlist/remove"]
+          },
+          {
+            "group": "Auth",
+            "pages": ["api/auth/register", "api/auth/login"]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Product catalog with categories, media gallery, and stock management",
+    "Order processing with payment integration (Bold payment gateway)",
+    "User authentication with JWT via Strapi users-permissions plugin",
+    "Wishlist management per user",
+    "Shipping address management",
+    "Email notifications via Nodemailer/SMTP",
+    "PostgreSQL database with optional MySQL and SQLite support",
+    "Draft and publish workflow for products and categories"
+  ],
+  "publicApiSurface": [
+    "GET /api/products",
+    "GET /api/products/:id",
+    "POST /api/products",
+    "PUT /api/products/:id",
+    "DELETE /api/products/:id",
+    "GET /api/categories",
+    "GET /api/categories/:id",
+    "POST /api/categories",
+    "GET /api/orders",
+    "GET /api/orders/:id",
+    "POST /api/payment-order",
+    "GET /api/addresses",
+    "POST /api/addresses",
+    "PUT /api/addresses/:id",
+    "DELETE /api/addresses/:id",
+    "GET /api/wishlists",
+    "POST /api/wishlists",
+    "DELETE /api/wishlists/:id",
+    "POST /api/auth/local/register",
+    "POST /api/auth/local"
+  ]
+}
