@@ -1,0 +1,130 @@
+---
+title: "Wishlist"
+description: "The Wishlist data model tracks a user's saved products for later purchase."
+---
+
+The `Wishlist` model represents a single saved-product entry in a user's wishlist. Each record links one [Product](/models/product) to one user — if a user saves three products, three separate `Wishlist` records exist. This one-entry-per-product design makes it straightforward to add or remove individual items without modifying a shared list object.
+
+Wishlist entries support a **draft/publish workflow**, though in typical usage all wishlist entries are published immediately on creation.
+
+## Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | — | Auto-generated unique identifier |
+| `product` | relation → Product | No | The product saved to the wishlist |
+| `user` | relation → User | No | The user who saved the product |
+| `publishedAt` | datetime | — | Set when the entry is published; `null` when in draft |
+
+## Relationships
+
+| Relation | Type | Target model | Description |
+|---|---|---|---|
+| `product` | One-to-one | [Product](/models/product) | The saved product |
+| `user` | One-to-one | users-permissions.user | The user whose wishlist this entry belongs to |
+
+## API response example
+
+A single wishlist entry with its product populated:
+
+```json
+{
+  "data": {
+    "id": 73,
+    "attributes": {
+      "publishedAt": "2026-01-15T11:00:00.000Z",
+      "createdAt": "2026-01-15T11:00:00.000Z",
+      "updatedAt": "2026-01-15T11:00:00.000Z",
+      "product": {
+        "data": {
+          "id": 14,
+          "attributes": {
+            "title": "Ethiopian Yirgacheffe Single Origin",
+            "price": 1850,
+            "discount": 10,
+            "summary": "A light-roast single origin with bright citrus notes and a floral finish.",
+            "slug": "ethiopian-yirgacheffe-single-origin",
+            "stock": 42,
+            "weight": 250,
+            "publishedAt": "2025-11-03T09:15:00.000Z"
+          }
+        }
+      },
+      "user": {
+        "data": {
+          "id": 55,
+          "attributes": {
+            "username": "mgarcia",
+            "email": "m.garcia@example.com"
+          }
+        }
+      }
+    }
+  },
+  "meta": {}
+}
+```
+
+A user's full wishlist (multiple entries):
+
+```json
+{
+  "data": [
+    {
+      "id": 73,
+      "attributes": {
+        "publishedAt": "2026-01-15T11:00:00.000Z",
+        "product": {
+          "data": {
+            "id": 14,
+            "attributes": {
+              "title": "Ethiopian Yirgacheffe Single Origin",
+              "price": 1850,
+              "discount": 10,
+              "slug": "ethiopian-yirgacheffe-single-origin"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 81,
+      "attributes": {
+        "publishedAt": "2026-01-20T14:30:00.000Z",
+        "product": {
+          "data": {
+            "id": 7,
+            "attributes": {
+              "title": "Classic Espresso Blend",
+              "price": 1400,
+              "discount": 0,
+              "slug": "classic-espresso-blend"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 25, "pageCount": 1, "total": 2 }
+  }
+}
+```
+
+## Notes
+
+<Note>
+  **One record per product** — The wishlist uses individual records rather than a single array-based list. To check whether a product is already in a user's wishlist, query: `GET /api/wishlists?filters[user][id][$eq]=55&filters[product][id][$eq]=14`. To remove a product, delete the corresponding wishlist record by its `id`.
+</Note>
+
+<Note>
+  **User scoping** — Always filter wishlist queries by the authenticated user's ID. Without this filter, queries may return wishlist entries from other users.
+</Note>
+
+<Note>
+  **Populate product data** — The `product` relation is not included in responses by default. Use the `populate` parameter to include product details: `GET /api/wishlists?populate=product&filters[user][id][$eq]=55`.
+</Note>
+
+<Note>
+  **Draft/publish** — Wishlist entries have `draftAndPublish` enabled in the schema, but in practice entries should be published immediately on creation. A wishlist entry with `publishedAt: null` will not be returned by public API requests.
+</Note>

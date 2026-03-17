@@ -1,0 +1,126 @@
+---
+title: "Delete a product"
+description: "Permanently delete a product by its numeric ID. Requires admin privileges."
+api: "DELETE https://api.cafeacacias.com/api/products/{id}"
+---
+
+<Danger>
+  This action is irreversible. Deleting a product permanently removes it and all associated data from the database. Verify the product ID before proceeding.
+</Danger>
+
+<Info>
+  This endpoint requires an admin role. Editor and customer accounts cannot delete products.
+</Info>
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+## Path parameters
+
+<ParamField path="id" type="number" required>
+  Numeric ID of the product to delete.
+</ParamField>
+
+## Response
+
+Returns `200 OK` with the deleted product object as it existed immediately before deletion.
+
+<ResponseField name="data" type="object">
+  The deleted product object.
+
+  <Expandable title="product object">
+    <ResponseField name="id" type="number">Numeric product ID.</ResponseField>
+    <ResponseField name="documentId" type="string">Strapi v5 document ID.</ResponseField>
+    <ResponseField name="title" type="string">Product title.</ResponseField>
+    <ResponseField name="price" type="number">Price in COP.</ResponseField>
+    <ResponseField name="discount" type="number">Discount percentage, or `null`.</ResponseField>
+    <ResponseField name="summary" type="string">Product summary.</ResponseField>
+    <ResponseField name="slug" type="string">URL slug.</ResponseField>
+    <ResponseField name="video" type="string">Video URL, or `null`.</ResponseField>
+    <ResponseField name="weight" type="number">Weight in grams.</ResponseField>
+    <ResponseField name="stock" type="number">Inventory count at the time of deletion.</ResponseField>
+    <ResponseField name="image" type="string">External image URL, or `null`.</ResponseField>
+    <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+    <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp.</ResponseField>
+    <ResponseField name="publishedAt" type="string">ISO 8601 publish timestamp.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-resource responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request DELETE \
+  --url 'https://api.cafeacacias.com/api/products/15' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": {
+    "id": 15,
+    "documentId": "c7h5n1r2s4",
+    "title": "Geisha Washed Huila",
+    "price": 52000,
+    "discount": null,
+    "summary": "Variedad Geisha de proceso lavado, cultivada en el departamento del Huila. Perfil de taza con notas de jazmín, melocotón y té blanco.",
+    "slug": "geisha-washed-huila",
+    "video": null,
+    "weight": 100,
+    "stock": 20,
+    "image": null,
+    "createdAt": "2026-03-17T08:45:00.000Z",
+    "updatedAt": "2026-03-17T08:45:00.000Z",
+    "publishedAt": "2026-03-17T08:45:00.000Z"
+  },
+  "meta": {}
+}
+```
+
+```json 401
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Missing or invalid credentials",
+    "details": {}
+  }
+}
+```
+
+```json 403
+{
+  "data": null,
+  "error": {
+    "status": 403,
+    "name": "ForbiddenError",
+    "message": "You are not allowed to perform this action",
+    "details": {}
+  }
+}
+```
+
+```json 404
+{
+  "data": null,
+  "error": {
+    "status": 404,
+    "name": "NotFoundError",
+    "message": "Not Found",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

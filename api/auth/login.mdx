@@ -1,0 +1,144 @@
+---
+title: "Login"
+description: "Authenticate with an email or username and password to receive a JWT."
+api: "POST https://api.cafeacacias.com/api/auth/local"
+---
+
+<Info>
+  This endpoint is provided by the Strapi `users-permissions` plugin. The returned JWT expires after **1 day** (`expiresIn: "1d"`). Store it securely and refresh it by logging in again when it expires.
+</Info>
+
+## Request body
+
+No authentication header is required — this is a public endpoint.
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+<ParamField body="identifier" type="string" required>
+  The user's email address or username.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  The user's password.
+</ParamField>
+
+## Response
+
+Returns `200 OK` with a JWT and the authenticated user object.
+
+<ResponseField name="jwt" type="string">
+  Signed JWT to use as the Bearer token in subsequent authenticated requests. Expires after 1 day.
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  The authenticated user object.
+
+  <Expandable title="user object" defaultOpen>
+    <ResponseField name="id" type="number">Numeric user ID.</ResponseField>
+    <ResponseField name="documentId" type="string">Strapi v5 document ID.</ResponseField>
+    <ResponseField name="username" type="string">Username.</ResponseField>
+    <ResponseField name="email" type="string">Email address.</ResponseField>
+    <ResponseField name="confirmed" type="boolean">Whether the email address has been confirmed.</ResponseField>
+    <ResponseField name="blocked" type="boolean">Whether the account has been blocked.</ResponseField>
+    <ResponseField name="firstName" type="string">First name, or `null` if not set.</ResponseField>
+    <ResponseField name="lastName" type="string">Last name, or `null` if not set.</ResponseField>
+    <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+    <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+<Tabs>
+  <Tab title="Login with email">
+
+```bash cURL
+curl --request POST \
+  --url 'https://api.cafeacacias.com/api/auth/local' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "identifier": "juan.camilo@example.com",
+    "password": "CafeSeguro2026!"
+  }'
+```
+
+  </Tab>
+  <Tab title="Login with username">
+
+```bash cURL
+curl --request POST \
+  --url 'https://api.cafeacacias.com/api/auth/local' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "identifier": "aroma_del_huila",
+    "password": "CafeSeguro2026!"
+  }'
+```
+
+  </Tab>
+</Tabs>
+
+```json Request body
+{
+  "identifier": "juan.camilo@example.com",
+  "password": "CafeSeguro2026!"
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjMsImlhdCI6MTc0MjIwNDAwMCwiZXhwIjoxNzQyMjkwNDAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+  "user": {
+    "id": 63,
+    "documentId": "usr_aroma_huila_01",
+    "username": "aroma_del_huila",
+    "email": "juan.camilo@example.com",
+    "confirmed": true,
+    "blocked": false,
+    "firstName": "Juan Camilo",
+    "lastName": "Herrera Prada",
+    "createdAt": "2026-03-17T13:00:00.000Z",
+    "updatedAt": "2026-03-17T13:00:00.000Z"
+  }
+}
+```
+
+```json 400 – Invalid credentials
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "Invalid identifier or password",
+    "details": {}
+  }
+}
+```
+
+```json 400 – Missing fields
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "identifier is a required field",
+    "details": {
+      "errors": [
+        {
+          "path": ["identifier"],
+          "message": "identifier is a required field",
+          "name": "ValidationError"
+        }
+      ]
+    }
+  }
+}
+```
+
+</ResponseExample>

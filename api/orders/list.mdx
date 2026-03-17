@@ -1,0 +1,232 @@
+---
+title: "List orders"
+description: "Retrieve a paginated list of orders. Admins see all orders; regular users must filter by their own user ID."
+---
+
+Returns a paginated list of orders sorted by creation date. The response includes order state, products, shipping address, and total payment.
+
+<Warning>
+  This endpoint does not automatically scope results to the authenticated user. Regular users **must** pass `filters[user][id][$eq]={userId}` to restrict results to their own orders. Without this filter, the API will return all orders the role has permission to access.
+</Warning>
+
+<Note>
+  Admins and content managers can omit the user filter to retrieve all orders across all customers.
+</Note>
+
+## Query parameters
+
+<ParamField query="filters[user][id][$eq]" type="number">
+  Filter orders by user ID. Required for non-admin users to retrieve only their own orders.
+
+  Example: `filters[user][id][$eq]=42`
+</ParamField>
+
+<ParamField query="filters[state][$eq]" type="string">
+  Filter orders by their current state.
+
+  Allowed values: `Pedido creado`, `Pago confirmado`, `Preparando tu café`, `Enviado`, `Entregado`, `Cancelado`
+</ParamField>
+
+<ParamField query="populate" type="string">
+  Relations to populate. Pass `user` to include the associated user object.
+
+  Example: `populate=user`
+</ParamField>
+
+<ParamField query="sort[0]" type="string" default="createdAt:desc">
+  Sort field and direction. Defaults to most recent orders first.
+
+  Example: `sort[0]=createdAt:desc`
+</ParamField>
+
+<ParamField query="pagination[page]" type="number" default="1">
+  Page number (1-indexed).
+</ParamField>
+
+<ParamField query="pagination[pageSize]" type="number" default="25">
+  Number of results per page. Maximum is 100.
+</ParamField>
+
+## Request
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token obtained from the authentication endpoint.
+
+  Format: `Bearer <token>`
+</ParamField>
+
+<RequestExample>
+
+```bash cURL (user)
+curl --request GET \
+  --url 'https://api.cafeacacias.com/api/orders?filters[user][id][$eq]=42&sort[0]=createdAt:desc&populate=user' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+```bash cURL (admin)
+curl --request GET \
+  --url 'https://api.cafeacacias.com/api/orders?sort[0]=createdAt:desc&populate=user' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+```javascript JavaScript
+const userId = 42;
+
+const params = new URLSearchParams({
+  'filters[user][id][$eq]': userId,
+  'sort[0]': 'createdAt:desc',
+  populate: 'user'
+});
+
+const response = await fetch(
+  `https://api.cafeacacias.com/api/orders?${params}`,
+  {
+    headers: {
+      Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+    }
+  }
+);
+
+const { data, meta } = await response.json();
+```
+
+</RequestExample>
+
+## Response
+
+<ResponseField name="data" type="object[]">
+  Array of order objects.
+
+  <Expandable title="Order object">
+    <ResponseField name="id" type="number">
+      Unique numeric identifier for the order.
+    </ResponseField>
+
+    <ResponseField name="documentId" type="string">
+      Strapi v5 document identifier.
+    </ResponseField>
+
+    <ResponseField name="totalPayment" type="number">
+      Total amount charged for the order in the payment currency, rounded to the nearest integer using `Math.round()`.
+    </ResponseField>
+
+    <ResponseField name="idPayment" type="string">
+      UUID generated at order creation, used as the order reference in the Bold payment gateway.
+    </ResponseField>
+
+    <ResponseField name="state" type="string">
+      Current order state. One of: `Pedido creado`, `Pago confirmado`, `Preparando tu café`, `Enviado`, `Entregado`, `Cancelado`.
+    </ResponseField>
+
+    <ResponseField name="products" type="object[]">
+      Snapshot of the products included in the order at the time of purchase. Each item contains product details and quantity.
+    </ResponseField>
+
+    <ResponseField name="addressShiping" type="object">
+      Snapshot of the shipping address captured at the time of purchase.
+
+      <Expandable title="Address fields">
+        <ResponseField name="title" type="string">Address label (e.g., "Casa", "Oficina").</ResponseField>
+        <ResponseField name="name" type="string">Recipient full name.</ResponseField>
+        <ResponseField name="address" type="string">Street address.</ResponseField>
+        <ResponseField name="city" type="string">City.</ResponseField>
+        <ResponseField name="state" type="string">State or department.</ResponseField>
+        <ResponseField name="postalCode" type="string">Postal code.</ResponseField>
+        <ResponseField name="phone" type="string">Phone number without dial code.</ResponseField>
+        <ResponseField name="dialCode" type="string">Country dial code, e.g. `"+57"`.</ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="user" type="object | null">
+      The associated user. Only present when `populate=user` is passed.
+
+      <Expandable title="User object">
+        <ResponseField name="id" type="number">User ID.</ResponseField>
+        <ResponseField name="username" type="string">Username.</ResponseField>
+        <ResponseField name="email" type="string">Email address.</ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 timestamp of when the order was created.
+    </ResponseField>
+
+    <ResponseField name="updatedAt" type="string">
+      ISO 8601 timestamp of the last update.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination metadata.
+
+  <Expandable title="Pagination metadata">
+    <ResponseField name="pagination" type="object">
+      <Expandable title="properties">
+        <ResponseField name="page" type="number">Current page number.</ResponseField>
+        <ResponseField name="pageSize" type="number">Results per page.</ResponseField>
+        <ResponseField name="pageCount" type="number">Total pages.</ResponseField>
+        <ResponseField name="total" type="number">Total number of orders.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": [
+    {
+      "id": 18,
+      "documentId": "z9y8x7w6v5u4t3s2r1q0",
+      "totalPayment": 32500,
+      "idPayment": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "state": "Pago confirmado",
+      "products": [
+        {
+          "id": 3,
+          "title": "Cortado",
+          "price": 8500,
+          "discount": 0,
+          "quantity": 2
+        },
+        {
+          "id": 7,
+          "title": "Café de Especialidad Filtrado",
+          "price": 12000,
+          "discount": 10,
+          "quantity": 1
+        }
+      ],
+      "addressShiping": {
+        "title": "Casa",
+        "name": "Valentina Torres",
+        "address": "Calle 45 # 12-30",
+        "city": "Bogotá",
+        "state": "Cundinamarca",
+        "postalCode": "110311",
+        "phone": "3001234567",
+        "dialCode": "+57"
+      },
+      "user": {
+        "id": 42,
+        "username": "valentina.torres",
+        "email": "valentina@example.com"
+      },
+      "createdAt": "2024-11-20T14:35:00.000Z",
+      "updatedAt": "2024-11-20T15:10:00.000Z"
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 25,
+      "pageCount": 1,
+      "total": 1
+    }
+  }
+}
+```
+
+</ResponseExample>

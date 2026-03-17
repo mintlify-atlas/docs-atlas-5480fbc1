@@ -1,0 +1,101 @@
+---
+title: "Email configuration"
+description: "How to configure the Nodemailer SMTP provider used by the Cafe Acacias API to send order confirmations and transactional emails."
+---
+
+The API sends transactional emails through the `strapi-provider-email-nodemailer` provider. Configuration lives in `config/plugins.js` and is driven entirely by environment variables.
+
+## When emails are sent
+
+- **Order confirmation** — sent to the customer when an order is placed successfully.
+- **User registration** — sent to new users when they create an account.
+- **Password reset** — sent when a user requests a password reset link.
+
+## Required environment variables
+
+| Variable | Description |
+|---|---|
+| `SMTP_HOST` | Hostname of your SMTP server (e.g. `smtp.sendgrid.net`). |
+| `SMTP_PORT` | SMTP port. Use `465` for implicit SSL/TLS (matches `secure: true`). |
+| `SMTP_USERNAME` | SMTP authentication username or API key name. |
+| `SMTP_PASSWORD` | SMTP authentication password or API key value. |
+| `SMTP_DEFAULT_FROM` | Sender address applied to all outgoing emails (e.g. `orders@cafeacacias.com`). |
+| `SMTP_DEFAULT_REPLY_TO` | Reply-to address applied to all outgoing emails. |
+
+<Note>
+The plugin configuration sets `secure: true`, which enables implicit TLS. This requires **port 465**. If your provider only supports STARTTLS, change `SMTP_PORT` to `587` and set `secure: false` in `config/plugins.js`.
+</Note>
+
+## Provider configuration
+
+The relevant section of `config/plugins.js`:
+
+```js config/plugins.js
+module.exports = ({ env }) => ({
+  email: {
+    config: {
+      provider: 'nodemailer',
+      providerOptions: {
+        host: env('SMTP_HOST'),
+        port: env('SMTP_PORT'),
+        secure: true, // implicit TLS — use port 465
+        auth: {
+          user: env('SMTP_USERNAME'),
+          pass: env('SMTP_PASSWORD'),
+        },
+      },
+      settings: {
+        defaultFrom: env('SMTP_DEFAULT_FROM'),
+        defaultReplyTo: env('SMTP_DEFAULT_REPLY_TO'),
+      },
+    },
+  },
+});
+```
+
+## Configuration examples
+
+The environment variables follow a standard SMTP shape, so you can use any SMTP-compatible provider.
+
+<Tabs>
+  <Tab title="SendGrid">
+    SendGrid is a reliable choice for production transactional email. Use `apikey` as the username and your SendGrid API key as the password.
+
+    ```bash .env
+    SMTP_HOST=smtp.sendgrid.net
+    SMTP_PORT=465
+    SMTP_USERNAME=apikey
+    SMTP_PASSWORD=SG.your-sendgrid-api-key
+    SMTP_DEFAULT_FROM=orders@cafeacacias.com
+    SMTP_DEFAULT_REPLY_TO=support@cafeacacias.com
+    ```
+  </Tab>
+  <Tab title="Mailgun">
+    Mailgun SMTP credentials are found under **Sending → Domain settings → SMTP credentials** in your Mailgun dashboard.
+
+    ```bash .env
+    SMTP_HOST=smtp.mailgun.org
+    SMTP_PORT=465
+    SMTP_USERNAME=postmaster@mg.cafeacacias.com
+    SMTP_PASSWORD=your-mailgun-smtp-password
+    SMTP_DEFAULT_FROM=orders@cafeacacias.com
+    SMTP_DEFAULT_REPLY_TO=support@cafeacacias.com
+    ```
+  </Tab>
+  <Tab title="Gmail">
+    Gmail SMTP works well for low-volume testing. Enable **2-Step Verification** on the account, then generate an **App Password** to use as `SMTP_PASSWORD`.
+
+    <Warning>
+    Gmail enforces strict sending limits and is not recommended for production. Use a dedicated email service provider instead.
+    </Warning>
+
+    ```bash .env
+    SMTP_HOST=smtp.gmail.com
+    SMTP_PORT=465
+    SMTP_USERNAME=your-address@gmail.com
+    SMTP_PASSWORD=your-16-char-app-password
+    SMTP_DEFAULT_FROM=your-address@gmail.com
+    SMTP_DEFAULT_REPLY_TO=your-address@gmail.com
+    ```
+  </Tab>
+</Tabs>

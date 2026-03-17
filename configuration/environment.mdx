@@ -1,0 +1,115 @@
+---
+title: "Environment variables"
+description: "All environment variables used by the Cafe Acacias API, covering core Strapi settings, database, email, and payment configuration."
+---
+
+The API is configured entirely through environment variables. Create a `.env` file at the project root (copy `.env.example` to get started) and set each variable before starting the server.
+
+<Warning>
+Never commit your `.env` file to version control. Keep secrets such as `APP_KEYS`, `JWT_SECRET`, and `ENCRYPTION_KEY` out of your repository.
+</Warning>
+
+## Core Strapi variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `HOST` | No | `0.0.0.0` | Network interface the server binds to. |
+| `PORT` | No | `1337` | Port the HTTP server listens on. |
+| `APP_KEYS` | **Yes** | — | Comma-separated list of session encryption keys. Use at least two random strings. |
+| `API_TOKEN_SALT` | **Yes** | — | Salt used when hashing API tokens. |
+| `ADMIN_JWT_SECRET` | **Yes** | — | Secret used to sign admin panel JWTs. |
+| `TRANSFER_TOKEN_SALT` | **Yes** | — | Salt used when hashing data-transfer tokens. |
+| `JWT_SECRET` | **Yes** | — | Secret used to sign user-facing JWTs (Users & Permissions plugin). |
+| `ENCRYPTION_KEY` | **Yes** | — | Key used for encrypting sensitive data at rest. |
+
+<Tip>
+Generate strong values for all secret variables with `openssl rand -base64 32`. Each variable should use a unique random value.
+</Tip>
+
+## Database variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `DATABASE_CLIENT` | No | `postgres` | Database driver: `postgres`, `mysql`, or `sqlite`. |
+| `DATABASE_URL` | No | — | Full PostgreSQL connection string. When set, overrides individual host/port/name/user/password fields. |
+| `DATABASE_HOST` | No | `localhost` | Database server hostname. |
+| `DATABASE_PORT` | No | `5432` / `3306` | Database server port. Default varies by client. |
+| `DATABASE_NAME` | No | `strapi` | Name of the database. |
+| `DATABASE_USERNAME` | No | `strapi` | Database user. |
+| `DATABASE_PASSWORD` | No | `strapi` | Database password. |
+| `DATABASE_SSL` | No | `false` | Enable SSL for the database connection. |
+| `DATABASE_SCHEMA` | No | `public` | PostgreSQL schema (PostgreSQL only). |
+| `DATABASE_FILENAME` | No | `.tmp/data.db` | Path to the SQLite database file (SQLite only). |
+| `DATABASE_POOL_MIN` | No | `2` | Minimum number of connections in the pool. |
+| `DATABASE_POOL_MAX` | No | `10` | Maximum number of connections in the pool. |
+| `DATABASE_CONNECTION_TIMEOUT` | No | `60000` | Milliseconds to wait when acquiring a connection before timing out. |
+| `DATABASE_SSL_KEY` | No | — | SSL private key (PEM string). |
+| `DATABASE_SSL_CERT` | No | — | SSL certificate (PEM string). |
+| `DATABASE_SSL_CA` | No | — | SSL certificate authority (PEM string). |
+| `DATABASE_SSL_REJECT_UNAUTHORIZED` | No | `true` | Reject connections with unverified SSL certificates. Set to `false` only for self-signed certs in development. |
+
+## Email / SMTP variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `SMTP_HOST` | **Yes** | — | SMTP server hostname (e.g. `smtp.sendgrid.net`). |
+| `SMTP_PORT` | **Yes** | — | SMTP server port. Use `465` for SSL/TLS or `587` for STARTTLS. |
+| `SMTP_USERNAME` | **Yes** | — | SMTP authentication username. |
+| `SMTP_PASSWORD` | **Yes** | — | SMTP authentication password or API key. |
+| `SMTP_DEFAULT_FROM` | **Yes** | — | Default sender address (e.g. `orders@cafeacacias.com`). |
+| `SMTP_DEFAULT_REPLY_TO` | **Yes** | — | Default reply-to address. |
+
+## Payment variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `SECRET_KEY_BOLD` | **Yes** | — | Bold (payment gateway) secret key used server-side to authenticate requests. |
+| `API_KEY_BOLD` | **Yes** | — | Bold public API key used to initialise the payment widget. |
+
+<Note>
+The payment keys are consumed by the order controller. `SECRET_KEY_BOLD` must never be exposed to the client; `API_KEY_BOLD` is safe to include in frontend configuration.
+</Note>
+
+## Full `.env` template
+
+Copy the block below into your `.env` file and replace every placeholder value before starting the server.
+
+```bash .env
+# ── Server ────────────────────────────────────────────────────────────────────
+HOST=0.0.0.0
+PORT=1337
+
+# ── Strapi secrets ────────────────────────────────────────────────────────────
+# Generate each value with: openssl rand -base64 32
+APP_KEYS="changeme-key-1,changeme-key-2"
+API_TOKEN_SALT=changeme
+ADMIN_JWT_SECRET=changeme
+TRANSFER_TOKEN_SALT=changeme
+JWT_SECRET=changeme
+ENCRYPTION_KEY=changeme
+
+# ── Database ──────────────────────────────────────────────────────────────────
+DATABASE_CLIENT=postgres
+# Option A – connection string (recommended for managed databases)
+DATABASE_URL=postgresql://user:password@localhost:5432/cafeacacias
+# Option B – individual fields
+# DATABASE_HOST=localhost
+# DATABASE_PORT=5432
+# DATABASE_NAME=cafeacacias
+# DATABASE_USERNAME=strapi
+# DATABASE_PASSWORD=changeme
+# DATABASE_SSL=false
+# DATABASE_SCHEMA=public
+
+# ── Email / SMTP ───────────────────────────────────────────────────────────────
+SMTP_HOST=smtp.example.com
+SMTP_PORT=465
+SMTP_USERNAME=apikey
+SMTP_PASSWORD=changeme
+SMTP_DEFAULT_FROM=orders@cafeacacias.com
+SMTP_DEFAULT_REPLY_TO=support@cafeacacias.com
+
+# ── Payment (Bold) ─────────────────────────────────────────────────────────────
+SECRET_KEY_BOLD=changeme
+API_KEY_BOLD=changeme
+```

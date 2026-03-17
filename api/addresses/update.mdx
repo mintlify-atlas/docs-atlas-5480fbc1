@@ -1,0 +1,169 @@
+---
+title: "Update an address"
+description: "Modify one or more fields on an existing shipping address."
+api: "PUT https://api.cafeacacias.com/api/addresses/:id"
+---
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+## Path parameters
+
+<ParamField path="id" type="number" required>
+  Numeric ID of the address to update.
+</ParamField>
+
+## Request body
+
+Wrap the fields to update inside a `data` object. Only include the fields you want to change — all other fields remain unchanged.
+
+<ParamField body="data" type="object" required>
+  Container object for the fields to update.
+
+  <Expandable title="data properties" defaultOpen>
+    <ParamField body="data.title" type="string">
+      Short label for the address, e.g. `Casa`, `Oficina`, `Finca`.
+    </ParamField>
+    <ParamField body="data.name" type="string">
+      Full name of the recipient at this address.
+    </ParamField>
+    <ParamField body="data.address" type="string">
+      Street address line, including house or apartment number.
+    </ParamField>
+    <ParamField body="data.city" type="string">
+      City name.
+    </ParamField>
+    <ParamField body="data.state" type="string">
+      Region or department.
+    </ParamField>
+    <ParamField body="data.postalCode" type="string">
+      Postal code.
+    </ParamField>
+    <ParamField body="data.phone" type="string">
+      Phone number for delivery contact, without the dial code prefix.
+    </ParamField>
+    <ParamField body="data.dialCode" type="string">
+      International dial code prefix, e.g. `+57`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns `200 OK` with the updated address object.
+
+<ResponseField name="data" type="object">
+  The updated address object.
+
+  <Expandable title="address object">
+    <ResponseField name="id" type="number">Numeric ID of the address.</ResponseField>
+    <ResponseField name="documentId" type="string">Strapi v5 document ID.</ResponseField>
+    <ResponseField name="title" type="string">Address label.</ResponseField>
+    <ResponseField name="name" type="string">Recipient name.</ResponseField>
+    <ResponseField name="address" type="string">Street address.</ResponseField>
+    <ResponseField name="city" type="string">City.</ResponseField>
+    <ResponseField name="state" type="string">Region or department.</ResponseField>
+    <ResponseField name="postalCode" type="string">Postal code.</ResponseField>
+    <ResponseField name="phone" type="string">Phone number.</ResponseField>
+    <ResponseField name="dialCode" type="string">Dial code prefix, or `null`.</ResponseField>
+    <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+    <ResponseField name="updatedAt" type="string">ISO 8601 timestamp of the most recent update.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-resource responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request PUT \
+  --url 'https://api.cafeacacias.com/api/addresses/24' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "data": {
+      "phone": "3157654321",
+      "postalCode": "050022"
+    }
+  }'
+```
+
+```json Request body
+{
+  "data": {
+    "phone": "3157654321",
+    "postalCode": "050022"
+  }
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": {
+    "id": 24,
+    "documentId": "addr_r4s8t1u5v2",
+    "title": "Casa",
+    "name": "Sebastián Mora Castillo",
+    "address": "Calle 10 # 43-12, Apto 202",
+    "city": "Medellín",
+    "state": "Antioquia",
+    "postalCode": "050022",
+    "phone": "3157654321",
+    "dialCode": "+57",
+    "createdAt": "2026-03-17T10:00:00.000Z",
+    "updatedAt": "2026-03-17T11:45:00.000Z"
+  },
+  "meta": {}
+}
+```
+
+```json 400
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "postalCode must be a `string` type",
+    "details": {}
+  }
+}
+```
+
+```json 401
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Missing or invalid credentials",
+    "details": {}
+  }
+}
+```
+
+```json 404
+{
+  "data": null,
+  "error": {
+    "status": 404,
+    "name": "NotFoundError",
+    "message": "Not Found",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

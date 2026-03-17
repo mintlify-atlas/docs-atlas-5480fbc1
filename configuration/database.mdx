@@ -1,0 +1,138 @@
+---
+title: "Database configuration"
+description: "How to configure PostgreSQL, MySQL, or SQLite for the Cafe Acacias API, including connection pooling and SSL options."
+---
+
+Database settings live in `config/database.js`. The file reads configuration from environment variables at startup, so no code changes are needed when moving between environments.
+
+The active client is controlled by `DATABASE_CLIENT` (default: `postgres`).
+
+## Supported databases
+
+<Tabs>
+  <Tab title="PostgreSQL">
+    PostgreSQL is the recommended database for production deployments.
+
+    **Required environment variables:**
+
+    | Variable | Default | Description |
+    |---|---|---|
+    | `DATABASE_CLIENT` | `postgres` | Must be `postgres`. |
+    | `DATABASE_HOST` | `localhost` | Server hostname. |
+    | `DATABASE_PORT` | `5432` | Server port. |
+    | `DATABASE_NAME` | `strapi` | Database name. |
+    | `DATABASE_USERNAME` | `strapi` | Database user. |
+    | `DATABASE_PASSWORD` | `strapi` | Database password. |
+    | `DATABASE_SCHEMA` | `public` | PostgreSQL schema. |
+    | `DATABASE_SSL` | `false` | Enable SSL. |
+
+    <Tip>
+    Most managed PostgreSQL providers (Railway, Supabase, Render, AWS RDS) supply a `DATABASE_URL` connection string. Set `DATABASE_URL` instead of the individual fields above and the driver will use it automatically.
+    </Tip>
+
+    ```bash Example .env (individual fields)
+    DATABASE_CLIENT=postgres
+    DATABASE_HOST=db.example.com
+    DATABASE_PORT=5432
+    DATABASE_NAME=cafeacacias
+    DATABASE_USERNAME=strapi
+    DATABASE_PASSWORD=your-password
+    DATABASE_SCHEMA=public
+    DATABASE_SSL=true
+    ```
+
+    ```bash Example .env (connection string)
+    DATABASE_CLIENT=postgres
+    DATABASE_URL=postgresql://strapi:your-password@db.example.com:5432/cafeacacias
+    ```
+  </Tab>
+  <Tab title="MySQL">
+    MySQL 8 and MariaDB are supported via the `mysql` client.
+
+    **Required environment variables:**
+
+    | Variable | Default | Description |
+    |---|---|---|
+    | `DATABASE_CLIENT` | `postgres` | Must be set to `mysql`. |
+    | `DATABASE_HOST` | `localhost` | Server hostname. |
+    | `DATABASE_PORT` | `3306` | Server port. |
+    | `DATABASE_NAME` | `strapi` | Database name. |
+    | `DATABASE_USERNAME` | `strapi` | Database user. |
+    | `DATABASE_PASSWORD` | `strapi` | Database password. |
+    | `DATABASE_SSL` | `false` | Enable SSL. |
+
+    ```bash Example .env
+    DATABASE_CLIENT=mysql
+    DATABASE_HOST=db.example.com
+    DATABASE_PORT=3306
+    DATABASE_NAME=cafeacacias
+    DATABASE_USERNAME=strapi
+    DATABASE_PASSWORD=your-password
+    DATABASE_SSL=true
+    ```
+  </Tab>
+  <Tab title="SQLite">
+    SQLite requires no additional server and is the fastest way to get a local development environment running.
+
+    <Warning>
+    SQLite is not suitable for production. It does not support concurrent writes and cannot be shared across multiple server instances.
+    </Warning>
+
+    **Required environment variables:**
+
+    | Variable | Default | Description |
+    |---|---|---|
+    | `DATABASE_CLIENT` | `postgres` | Must be set to `sqlite`. |
+    | `DATABASE_FILENAME` | `.tmp/data.db` | Path to the SQLite file, relative to the project root. |
+
+    ```bash Example .env
+    DATABASE_CLIENT=sqlite
+    DATABASE_FILENAME=.tmp/data.db
+    ```
+
+    The `.tmp/` directory is created automatically by Strapi on first run.
+  </Tab>
+</Tabs>
+
+## Connection pooling
+
+All database clients use a connection pool managed by [Knex](https://knexjs.org/). The default pool size is 2–10 connections.
+
+| Variable | Default | Description |
+|---|---|---|
+| `DATABASE_POOL_MIN` | `2` | Minimum number of idle connections kept open. |
+| `DATABASE_POOL_MAX` | `10` | Maximum number of concurrent connections. |
+| `DATABASE_CONNECTION_TIMEOUT` | `60000` | Milliseconds to wait for an available connection before throwing a timeout error. |
+
+```bash .env
+DATABASE_POOL_MIN=2
+DATABASE_POOL_MAX=20
+DATABASE_CONNECTION_TIMEOUT=30000
+```
+
+<Note>
+Increase `DATABASE_POOL_MAX` for high-traffic deployments. Set it to no more than the maximum connections your database plan allows, minus connections reserved for admin tools.
+</Note>
+
+## SSL configuration
+
+When `DATABASE_SSL=true`, you can supply certificate material through additional variables. These are supported for both `postgres` and `mysql` clients.
+
+| Variable | Description |
+|---|---|
+| `DATABASE_SSL_KEY` | Client private key (PEM). |
+| `DATABASE_SSL_CERT` | Client certificate (PEM). |
+| `DATABASE_SSL_CA` | Certificate authority (PEM). |
+| `DATABASE_SSL_CAPATH` | Path to a directory of CA certificates. |
+| `DATABASE_SSL_CIPHER` | Allowed cipher list. |
+| `DATABASE_SSL_REJECT_UNAUTHORIZED` | Reject connections where the server certificate cannot be verified. Defaults to `true`. Set to `false` only for self-signed certificates in development. |
+
+<Warning>
+Setting `DATABASE_SSL_REJECT_UNAUTHORIZED=false` disables certificate verification and exposes the connection to man-in-the-middle attacks. Never use this in production.
+</Warning>
+
+```bash .env (SSL with CA certificate)
+DATABASE_SSL=true
+DATABASE_SSL_CA="-----BEGIN CERTIFICATE-----\n..."
+DATABASE_SSL_REJECT_UNAUTHORIZED=true
+```

@@ -1,0 +1,127 @@
+---
+title: "Product"
+description: "The Product data model represents a coffee shop item available for purchase."
+---
+
+The `Product` model is the core catalog entity in the Cafe Acacias API. It represents a purchasable item — such as a bag of coffee beans, a brewing kit, or a specialty drink blend — and carries all the information needed to display, price, and sell that item in the storefront.
+
+Products support a **draft/publish workflow**, meaning a product can be created and edited internally before being made visible to customers.
+
+## Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | — | Auto-generated unique identifier |
+| `title` | string | Yes | Display name of the product |
+| `price` | integer | Yes | Base price in the smallest currency unit (e.g., cents) |
+| `discount` | integer | No | Discount percentage (0–100). See notes below |
+| `summary` | text | Yes | Short description shown in listings and product pages |
+| `slug` | uid | Yes | URL-friendly identifier, auto-generated from `title` |
+| `video` | string | No | URL to a product video |
+| `cover` | media (image) | No | Primary product image |
+| `wallpaper` | media (image) | No | Full-width hero image for the product detail page |
+| `gallery` | media\[] (images) | No | Additional product images |
+| `weight` | integer | Yes | Product weight in grams |
+| `category` | relation → Category | No | The category this product belongs to |
+| `stock` | integer | Yes | Current units available in inventory |
+| `image` | string | No | External image URL (legacy field) |
+| `publishedAt` | datetime | — | Set when the product is published; `null` when in draft |
+
+## Relationships
+
+| Relation | Type | Target model | Description |
+|---|---|---|---|
+| `category` | One-to-one | [Category](/models/category) | The menu category this product is grouped under |
+
+## API response example
+
+```json
+{
+  "data": {
+    "id": 14,
+    "attributes": {
+      "title": "Ethiopian Yirgacheffe Single Origin",
+      "price": 1850,
+      "discount": 10,
+      "summary": "A light-roast single origin with bright citrus notes and a floral finish. Sourced from small farms in the Yirgacheffe region of southern Ethiopia.",
+      "slug": "ethiopian-yirgacheffe-single-origin",
+      "video": "https://cdn.cafeacacias.com/videos/yirgacheffe-story.mp4",
+      "weight": 250,
+      "stock": 42,
+      "image": null,
+      "publishedAt": "2025-11-03T09:15:00.000Z",
+      "createdAt": "2025-10-28T14:22:00.000Z",
+      "updatedAt": "2025-11-03T09:15:00.000Z",
+      "cover": {
+        "data": {
+          "id": 87,
+          "attributes": {
+            "url": "/uploads/yirgacheffe_cover_a3f9d2.jpg",
+            "width": 800,
+            "height": 800,
+            "alternativeText": "Ethiopian Yirgacheffe coffee bag"
+          }
+        }
+      },
+      "wallpaper": {
+        "data": {
+          "id": 88,
+          "attributes": {
+            "url": "/uploads/yirgacheffe_wallpaper_c1e8b4.jpg",
+            "width": 1920,
+            "height": 600,
+            "alternativeText": "Coffee farm landscape in Yirgacheffe"
+          }
+        }
+      },
+      "gallery": {
+        "data": [
+          {
+            "id": 89,
+            "attributes": {
+              "url": "/uploads/yirgacheffe_beans_top_d7a2f1.jpg",
+              "width": 800,
+              "height": 800,
+              "alternativeText": "Close-up of roasted Yirgacheffe beans"
+            }
+          }
+        ]
+      },
+      "category": {
+        "data": {
+          "id": 3,
+          "attributes": {
+            "title": "Single Origin",
+            "slug": "single-origin"
+          }
+        }
+      }
+    }
+  },
+  "meta": {}
+}
+```
+
+## Notes
+
+<Note>
+  **Discount calculation** — The `discount` field holds a percentage value between 0 and 100. The discounted price is calculated as:
+
+  ```
+  discountedPrice = price - (price * discount / 100)
+  ```
+
+  For example, a product with `price: 1850` and `discount: 10` has a final price of **1665**.
+</Note>
+
+<Note>
+  **Slug auto-generation** — The `slug` field is a Strapi UID field targeting `title`. When a product is created or when `title` is updated, Strapi generates a unique, URL-safe slug automatically. You can override it manually, but it must remain unique across all products.
+</Note>
+
+<Note>
+  **Draft/publish workflow** — Products have draft and publish states. A product with `publishedAt: null` is in draft and will not appear in public-facing API responses unless the request is authenticated and explicitly requests draft content. Set `publishedAt` to a datetime to publish the product.
+</Note>
+
+<Note>
+  **Media fields** — `cover`, `wallpaper`, and `gallery` reference Strapi media library entries. `cover` and `wallpaper` are single images; `gallery` is a multiple-image field. The `image` field is a legacy plain-string URL and is superseded by the `cover` media relation.
+</Note>

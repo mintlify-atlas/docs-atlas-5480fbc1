@@ -1,0 +1,199 @@
+---
+title: "Create a product"
+description: "Create a new product. Requires admin privileges."
+api: "POST https://api.cafeacacias.com/api/products"
+---
+
+<Info>
+  This endpoint requires an admin or editor role. Standard customer accounts cannot create products.
+</Info>
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+## Request body
+
+Wrap all product fields inside a `data` object.
+
+<ParamField body="data" type="object" required>
+  Container object for all product fields.
+
+  <Expandable title="data properties" defaultOpen>
+    <ParamField body="data.title" type="string" required>
+      Display name of the product. Strapi automatically derives the `slug` from this field if `slug` is not provided.
+    </ParamField>
+    <ParamField body="data.price" type="number" required>
+      Price in Colombian pesos (COP). Must be a positive integer.
+    </ParamField>
+    <ParamField body="data.summary" type="string" required>
+      Short description of the product shown in listings and product pages.
+    </ParamField>
+    <ParamField body="data.weight" type="number" required>
+      Product weight in grams. Must be a positive integer.
+    </ParamField>
+    <ParamField body="data.stock" type="number" required>
+      Initial inventory count. Must be a non-negative integer.
+    </ParamField>
+    <ParamField body="data.slug" type="string">
+      URL-safe unique identifier. Auto-generated from `title` if omitted. Must be unique across all products.
+    </ParamField>
+    <ParamField body="data.discount" type="number">
+      Discount percentage (0–100). Omit or set to `null` for no discount.
+    </ParamField>
+    <ParamField body="data.video" type="string">
+      URL to a product video (e.g., YouTube link).
+    </ParamField>
+    <ParamField body="data.image" type="string">
+      URL to an external product image.
+    </ParamField>
+    <ParamField body="data.category" type="number">
+      Numeric ID of the related category. Creates a one-to-one relation.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<Note>
+  To attach media files (`cover`, `wallpaper`, `gallery`), first upload the files using the Strapi Upload API (`POST /api/upload`), then include the returned media IDs in a subsequent update request (`PUT /api/products/:id`).
+</Note>
+
+## Response
+
+Returns `201 Created` with the newly created product object.
+
+<ResponseField name="data" type="object">
+  The created product object, including the system-assigned `id`, `documentId`, `slug`, and timestamps.
+
+  <Expandable title="product object">
+    <ResponseField name="id" type="number">System-assigned numeric ID.</ResponseField>
+    <ResponseField name="documentId" type="string">System-assigned Strapi v5 document ID.</ResponseField>
+    <ResponseField name="title" type="string">Product title.</ResponseField>
+    <ResponseField name="price" type="number">Price in COP.</ResponseField>
+    <ResponseField name="discount" type="number">Discount percentage, or `null`.</ResponseField>
+    <ResponseField name="summary" type="string">Product summary.</ResponseField>
+    <ResponseField name="slug" type="string">URL slug.</ResponseField>
+    <ResponseField name="video" type="string">Video URL, or `null`.</ResponseField>
+    <ResponseField name="weight" type="number">Weight in grams.</ResponseField>
+    <ResponseField name="stock" type="number">Inventory count.</ResponseField>
+    <ResponseField name="image" type="string">External image URL, or `null`.</ResponseField>
+    <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+    <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp.</ResponseField>
+    <ResponseField name="publishedAt" type="string">ISO 8601 publish timestamp. `null` if saved as a draft.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-resource responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url 'https://api.cafeacacias.com/api/products' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "data": {
+      "title": "Geisha Washed Huila",
+      "price": 52000,
+      "summary": "Variedad Geisha de proceso lavado, cultivada en el departamento del Huila. Perfil de taza con notas de jazmín, melocotón y té blanco.",
+      "weight": 100,
+      "stock": 20,
+      "discount": null,
+      "category": 3
+    }
+  }'
+```
+
+```json Request body
+{
+  "data": {
+    "title": "Geisha Washed Huila",
+    "price": 52000,
+    "summary": "Variedad Geisha de proceso lavado, cultivada en el departamento del Huila. Perfil de taza con notas de jazmín, melocotón y té blanco.",
+    "weight": 100,
+    "stock": 20,
+    "discount": null,
+    "category": 3
+  }
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "data": {
+    "id": 15,
+    "documentId": "c7h5n1r2s4",
+    "title": "Geisha Washed Huila",
+    "price": 52000,
+    "discount": null,
+    "summary": "Variedad Geisha de proceso lavado, cultivada en el departamento del Huila. Perfil de taza con notas de jazmín, melocotón y té blanco.",
+    "slug": "geisha-washed-huila",
+    "video": null,
+    "weight": 100,
+    "stock": 20,
+    "image": null,
+    "createdAt": "2026-03-17T08:45:00.000Z",
+    "updatedAt": "2026-03-17T08:45:00.000Z",
+    "publishedAt": "2026-03-17T08:45:00.000Z"
+  },
+  "meta": {}
+}
+```
+
+```json 400
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "title must be a `string` type, but the final value was: `null`.",
+    "details": {
+      "errors": [
+        {
+          "path": ["title"],
+          "message": "title is a required field",
+          "name": "ValidationError"
+        }
+      ]
+    }
+  }
+}
+```
+
+```json 401
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Missing or invalid credentials",
+    "details": {}
+  }
+}
+```
+
+```json 403
+{
+  "data": null,
+  "error": {
+    "status": 403,
+    "name": "ForbiddenError",
+    "message": "You are not allowed to perform this action",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

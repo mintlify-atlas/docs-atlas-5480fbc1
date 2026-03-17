@@ -1,0 +1,258 @@
+---
+title: "Authentication"
+description: "Register users, log in, and authenticate API requests using JWT Bearer tokens."
+---
+
+The Cafe Acacias API uses **JSON Web Tokens (JWT)** for authentication, provided by the Strapi `users-permissions` plugin. Tokens expire after **1 day** and must be included in requests to protected endpoints.
+
+## Overview
+
+- Tokens are issued at login and registration via the `/api/auth/local` endpoints.
+- Every protected request must include an `Authorization: Bearer <token>` header.
+- Tokens expire after `1d`. After expiry, the client must log in again to obtain a new token.
+- Most content endpoints require authentication. Public endpoints are configured explicitly in the admin panel under **Settings → Roles → Public**.
+
+---
+
+## Register a new user
+
+`POST /api/auth/local/register`
+
+Creates a new user account and returns a JWT token immediately. The `firstName` and `lastName` fields are enabled as custom allowed fields in the server configuration.
+
+### Request body
+
+<ParamField body="username" type="string" required>
+  A unique username for the account.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  The user's email address. Must be unique.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  The account password.
+</ParamField>
+
+<ParamField body="firstName" type="string">
+  The user's first name.
+</ParamField>
+
+<ParamField body="lastName" type="string">
+  The user's last name.
+</ParamField>
+
+### Example
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url http://localhost:1337/api/auth/local/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "username": "maria.garcia",
+        "email": "maria@example.com",
+        "password": "SecurePass123!",
+        "firstName": "Maria",
+        "lastName": "Garcia"
+      }'
+    ```
+  </Tab>
+  <Tab title="JSON body">
+    ```json
+    {
+      "username": "maria.garcia",
+      "email": "maria@example.com",
+      "password": "SecurePass123!",
+      "firstName": "Maria",
+      "lastName": "Garcia"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Response
+
+```json 200
+{
+  "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "documentId": "abc123xyz",
+    "username": "maria.garcia",
+    "email": "maria@example.com",
+    "firstName": "Maria",
+    "lastName": "Garcia",
+    "provider": "local",
+    "confirmed": false,
+    "blocked": false,
+    "createdAt": "2026-03-17T10:00:00.000Z",
+    "updatedAt": "2026-03-17T10:00:00.000Z"
+  }
+}
+```
+
+<ResponseField name="jwt" type="string" required>
+  The JWT token to use in subsequent requests. Store this securely on the client.
+</ResponseField>
+
+<ResponseField name="user" type="object" required>
+  The newly created user object.
+  <Expandable title="properties">
+    <ResponseField name="id" type="number">
+      Internal numeric ID.
+    </ResponseField>
+    <ResponseField name="documentId" type="string">
+      Stable public document identifier.
+    </ResponseField>
+    <ResponseField name="username" type="string">
+      The account username.
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      The account email address.
+    </ResponseField>
+    <ResponseField name="firstName" type="string">
+      The user's first name.
+    </ResponseField>
+    <ResponseField name="lastName" type="string">
+      The user's last name.
+    </ResponseField>
+    <ResponseField name="confirmed" type="boolean">
+      Whether the account email has been confirmed.
+    </ResponseField>
+    <ResponseField name="blocked" type="boolean">
+      Whether the account has been blocked by an administrator.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Log in
+
+`POST /api/auth/local`
+
+Authenticates an existing user with their identifier (username or email) and password, and returns a JWT token.
+
+### Request body
+
+<ParamField body="identifier" type="string" required>
+  The user's email address or username.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  The account password.
+</ParamField>
+
+### Example
+
+<Tabs>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url http://localhost:1337/api/auth/local \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "identifier": "maria@example.com",
+        "password": "SecurePass123!"
+      }'
+    ```
+  </Tab>
+  <Tab title="JSON body">
+    ```json
+    {
+      "identifier": "maria@example.com",
+      "password": "SecurePass123!"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Response
+
+```json 200
+{
+  "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "documentId": "abc123xyz",
+    "username": "maria.garcia",
+    "email": "maria@example.com",
+    "firstName": "Maria",
+    "lastName": "Garcia",
+    "provider": "local",
+    "confirmed": false,
+    "blocked": false,
+    "createdAt": "2026-03-17T10:00:00.000Z",
+    "updatedAt": "2026-03-17T10:00:00.000Z"
+  }
+}
+```
+
+```json 400
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "Invalid identifier or password"
+  }
+}
+```
+
+---
+
+## Using the token
+
+Include the JWT in the `Authorization` header of every authenticated request:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+### Example authenticated request
+
+```bash cURL
+curl http://localhost:1337/api/orders \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+<Note>
+  The token is a signed JWT — it does not need to be validated against a server-side session store. Keep it confidential; anyone with the token can make requests on behalf of that user until it expires.
+</Note>
+
+---
+
+## Token expiry and 401 errors
+
+Tokens are configured with a `1d` (24-hour) expiry. After a token expires, any request using it returns a `401 Unauthorized` response:
+
+```json 401
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Missing or invalid credentials"
+  }
+}
+```
+
+When you receive a `401`, prompt the user to log in again via `POST /api/auth/local` to obtain a new token. There is no token refresh endpoint — a fresh login is required.
+
+<Warning>
+  Do not extend token expiry beyond `1d` in production without understanding the security implications. Longer-lived tokens increase exposure if a token is compromised.
+</Warning>
+
+---
+
+## Protected routes
+
+Most API endpoints require a valid token. The following endpoints are publicly accessible without authentication:
+
+- `POST /api/auth/local` — login
+- `POST /api/auth/local/register` — registration
+- Any collection explicitly set to **Public** in **Settings → Roles → Public** in the admin panel
+
+All other endpoints return `403 Forbidden` for unauthenticated requests and `401 Unauthorized` for requests with an invalid or expired token.

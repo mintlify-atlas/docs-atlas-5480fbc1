@@ -1,0 +1,230 @@
+---
+title: "Update a product"
+description: "Update one or more fields of an existing product. Requires admin privileges."
+api: "PUT https://api.cafeacacias.com/api/products/{id}"
+---
+
+<Info>
+  This endpoint requires an admin or editor role. Standard customer accounts cannot update products.
+</Info>
+
+<Note>
+  Strapi v5 uses partial updates: only the fields you include in the request body are changed. Omitted fields retain their current values.
+</Note>
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+## Path parameters
+
+<ParamField path="id" type="number" required>
+  Numeric ID of the product to update.
+</ParamField>
+
+## Request body
+
+Wrap the fields to update inside a `data` object. All fields are optional.
+
+<ParamField body="data" type="object" required>
+  Container object for product fields to update.
+
+  <Expandable title="data properties" defaultOpen>
+    <ParamField body="data.title" type="string">
+      New display name. Updating this field does not automatically update the `slug`.
+    </ParamField>
+    <ParamField body="data.price" type="number">
+      New price in Colombian pesos (COP). Must be a positive integer.
+    </ParamField>
+    <ParamField body="data.summary" type="string">
+      New short description.
+    </ParamField>
+    <ParamField body="data.weight" type="number">
+      New weight in grams.
+    </ParamField>
+    <ParamField body="data.stock" type="number">
+      Updated inventory count.
+    </ParamField>
+    <ParamField body="data.slug" type="string">
+      New URL slug. Must be unique across all products.
+    </ParamField>
+    <ParamField body="data.discount" type="number">
+      New discount percentage (0–100). Pass `null` to remove an existing discount.
+    </ParamField>
+    <ParamField body="data.video" type="string">
+      New video URL. Pass `null` to remove.
+    </ParamField>
+    <ParamField body="data.image" type="string">
+      New external image URL. Pass `null` to remove.
+    </ParamField>
+    <ParamField body="data.category" type="number">
+      Numeric ID of the new category. Pass `null` to remove the category relation.
+    </ParamField>
+    <ParamField body="data.cover" type="number">
+      Media ID for the new cover image. Upload the file first via `POST /api/upload` to obtain the ID.
+    </ParamField>
+    <ParamField body="data.wallpaper" type="number">
+      Media ID for the new wallpaper image.
+    </ParamField>
+    <ParamField body="data.gallery" type="number[]">
+      Array of media IDs to replace the entire gallery. Pass an empty array `[]` to clear the gallery.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns `200 OK` with the full updated product object.
+
+<ResponseField name="data" type="object">
+  The updated product object.
+
+  <Expandable title="product object">
+    <ResponseField name="id" type="number">Numeric product ID.</ResponseField>
+    <ResponseField name="documentId" type="string">Strapi v5 document ID.</ResponseField>
+    <ResponseField name="title" type="string">Product title.</ResponseField>
+    <ResponseField name="price" type="number">Price in COP.</ResponseField>
+    <ResponseField name="discount" type="number">Discount percentage, or `null`.</ResponseField>
+    <ResponseField name="summary" type="string">Product summary.</ResponseField>
+    <ResponseField name="slug" type="string">URL slug.</ResponseField>
+    <ResponseField name="video" type="string">Video URL, or `null`.</ResponseField>
+    <ResponseField name="weight" type="number">Weight in grams.</ResponseField>
+    <ResponseField name="stock" type="number">Inventory count.</ResponseField>
+    <ResponseField name="image" type="string">External image URL, or `null`.</ResponseField>
+    <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+    <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp. Reflects the time of this update.</ResponseField>
+    <ResponseField name="publishedAt" type="string">ISO 8601 publish timestamp.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-resource responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash Update price and stock
+curl --request PUT \
+  --url 'https://api.cafeacacias.com/api/products/1' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "data": {
+      "price": 30000,
+      "stock": 60,
+      "discount": 15
+    }
+  }'
+```
+
+```bash Update category relation
+curl --request PUT \
+  --url 'https://api.cafeacacias.com/api/products/1' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "data": {
+      "category": 4
+    }
+  }'
+```
+
+```json Request body
+{
+  "data": {
+    "price": 30000,
+    "stock": 60,
+    "discount": 15
+  }
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": {
+    "id": 1,
+    "documentId": "a8f3k2m9p1",
+    "title": "Espresso Tostado Oscuro",
+    "price": 30000,
+    "discount": 15,
+    "summary": "Blend de origen colombiano con notas de chocolate oscuro y caramelo. Tostado oscuro ideal para espresso.",
+    "slug": "espresso-tostado-oscuro",
+    "video": null,
+    "weight": 250,
+    "stock": 60,
+    "image": null,
+    "createdAt": "2025-01-15T10:30:00.000Z",
+    "updatedAt": "2026-03-17T09:15:00.000Z",
+    "publishedAt": "2025-01-15T10:30:00.000Z"
+  },
+  "meta": {}
+}
+```
+
+```json 400
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "price must be a `number` type, but the final value was: `\"free\"`.",
+    "details": {
+      "errors": [
+        {
+          "path": ["price"],
+          "message": "price must be a `number` type",
+          "name": "ValidationError"
+        }
+      ]
+    }
+  }
+}
+```
+
+```json 401
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Missing or invalid credentials",
+    "details": {}
+  }
+}
+```
+
+```json 403
+{
+  "data": null,
+  "error": {
+    "status": 403,
+    "name": "ForbiddenError",
+    "message": "You are not allowed to perform this action",
+    "details": {}
+  }
+}
+```
+
+```json 404
+{
+  "data": null,
+  "error": {
+    "status": 404,
+    "name": "NotFoundError",
+    "message": "Not Found",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

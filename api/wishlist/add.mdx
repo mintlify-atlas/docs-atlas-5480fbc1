@@ -1,0 +1,127 @@
+---
+title: "Add to wishlist"
+description: "Add a product to the current user's wishlist."
+api: "POST https://api.cafeacacias.com/api/wishlists"
+---
+
+<Note>
+  Strapi does not enforce uniqueness on the wishlist collection. Before calling this endpoint, query the wishlist filtered by both `product` and `user` to confirm the product is not already saved. Adding the same product twice creates duplicate entries.
+</Note>
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+## Request body
+
+<ParamField body="data" type="object" required>
+  Container object for the wishlist entry fields.
+
+  <Expandable title="data properties" defaultOpen>
+    <ParamField body="data.product" type="number" required>
+      Numeric ID of the product to add.
+    </ParamField>
+    <ParamField body="data.user" type="number" required>
+      Numeric ID of the authenticated user. Pass the current user's ID to associate the entry with their account.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns `201 Created` with the newly created wishlist entry object.
+
+<ResponseField name="data" type="object">
+  The created wishlist entry.
+
+  <Expandable title="wishlist entry object">
+    <ResponseField name="id" type="number">System-assigned numeric ID of the wishlist entry.</ResponseField>
+    <ResponseField name="documentId" type="string">System-assigned Strapi v5 document ID.</ResponseField>
+    <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+    <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-resource responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url 'https://api.cafeacacias.com/api/wishlists' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "data": {
+      "product": 2,
+      "user": 42
+    }
+  }'
+```
+
+```json Request body
+{
+  "data": {
+    "product": 2,
+    "user": 42
+  }
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "data": {
+    "id": 5,
+    "documentId": "wl_p9q1r3s7t0",
+    "createdAt": "2026-03-17T12:00:00.000Z",
+    "updatedAt": "2026-03-17T12:00:00.000Z"
+  },
+  "meta": {}
+}
+```
+
+```json 400
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "product is a required field",
+    "details": {
+      "errors": [
+        {
+          "path": ["product"],
+          "message": "product is a required field",
+          "name": "ValidationError"
+        }
+      ]
+    }
+  }
+}
+```
+
+```json 401
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Missing or invalid credentials",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

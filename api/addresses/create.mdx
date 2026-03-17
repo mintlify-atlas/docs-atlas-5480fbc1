@@ -1,0 +1,176 @@
+---
+title: "Create an address"
+description: "Add a new shipping address for the current user."
+api: "POST https://api.cafeacacias.com/api/addresses"
+---
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+## Request body
+
+Wrap all address fields inside a `data` object.
+
+<ParamField body="data" type="object" required>
+  Container object for all address fields.
+
+  <Expandable title="data properties" defaultOpen>
+    <ParamField body="data.title" type="string" required>
+      Short label for the address. Common values: `Casa`, `Oficina`, `Finca`.
+    </ParamField>
+    <ParamField body="data.name" type="string" required>
+      Full name of the recipient at this address.
+    </ParamField>
+    <ParamField body="data.address" type="string" required>
+      Street address line, including house or apartment number.
+    </ParamField>
+    <ParamField body="data.city" type="string" required>
+      City name.
+    </ParamField>
+    <ParamField body="data.state" type="string" required>
+      Region or department (e.g., `Antioquia`, `Valle del Cauca`).
+    </ParamField>
+    <ParamField body="data.postalCode" type="string" required>
+      Postal code.
+    </ParamField>
+    <ParamField body="data.phone" type="string" required>
+      Phone number for delivery contact, without the dial code prefix.
+    </ParamField>
+    <ParamField body="data.dialCode" type="string">
+      International dial code prefix. Defaults to `+57` (Colombia) if omitted.
+    </ParamField>
+    <ParamField body="data.user" type="number">
+      Numeric ID of the user who owns this address. Set this to the authenticated user's ID to associate the address with their account. If omitted, the relation is not set automatically.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns `201 Created` with the newly created address object.
+
+<ResponseField name="data" type="object">
+  The created address object.
+
+  <Expandable title="address object">
+    <ResponseField name="id" type="number">System-assigned numeric ID.</ResponseField>
+    <ResponseField name="documentId" type="string">System-assigned Strapi v5 document ID.</ResponseField>
+    <ResponseField name="title" type="string">Address label.</ResponseField>
+    <ResponseField name="name" type="string">Recipient name.</ResponseField>
+    <ResponseField name="address" type="string">Street address.</ResponseField>
+    <ResponseField name="city" type="string">City.</ResponseField>
+    <ResponseField name="state" type="string">Region or department.</ResponseField>
+    <ResponseField name="postalCode" type="string">Postal code.</ResponseField>
+    <ResponseField name="phone" type="string">Phone number.</ResponseField>
+    <ResponseField name="dialCode" type="string">Dial code prefix, or `null`.</ResponseField>
+    <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+    <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-resource responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url 'https://api.cafeacacias.com/api/addresses' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "data": {
+      "title": "Casa",
+      "name": "Sebastián Mora Castillo",
+      "address": "Calle 10 # 43-12, Apto 202",
+      "city": "Medellín",
+      "state": "Antioquia",
+      "postalCode": "050021",
+      "phone": "3209876543",
+      "dialCode": "+57",
+      "user": 18
+    }
+  }'
+```
+
+```json Request body
+{
+  "data": {
+    "title": "Casa",
+    "name": "Sebastián Mora Castillo",
+    "address": "Calle 10 # 43-12, Apto 202",
+    "city": "Medellín",
+    "state": "Antioquia",
+    "postalCode": "050021",
+    "phone": "3209876543",
+    "dialCode": "+57",
+    "user": 18
+  }
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "data": {
+    "id": 24,
+    "documentId": "addr_r4s8t1u5v2",
+    "title": "Casa",
+    "name": "Sebastián Mora Castillo",
+    "address": "Calle 10 # 43-12, Apto 202",
+    "city": "Medellín",
+    "state": "Antioquia",
+    "postalCode": "050021",
+    "phone": "3209876543",
+    "dialCode": "+57",
+    "createdAt": "2026-03-17T10:00:00.000Z",
+    "updatedAt": "2026-03-17T10:00:00.000Z"
+  },
+  "meta": {}
+}
+```
+
+```json 400
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "name is a required field",
+    "details": {
+      "errors": [
+        {
+          "path": ["name"],
+          "message": "name is a required field",
+          "name": "ValidationError"
+        }
+      ]
+    }
+  }
+}
+```
+
+```json 401
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Missing or invalid credentials",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

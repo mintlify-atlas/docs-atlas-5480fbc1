@@ -1,0 +1,155 @@
+---
+title: "Register"
+description: "Create a new user account and receive a JWT for immediate authentication."
+api: "POST https://api.cafeacacias.com/api/auth/local/register"
+---
+
+<Info>
+  This endpoint is provided by the Strapi `users-permissions` plugin. The `firstName` and `lastName` fields are available because they are listed in the `allowedFields` configuration.
+</Info>
+
+## Request body
+
+No authentication header is required — this is a public endpoint.
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+<ParamField body="username" type="string" required>
+  Unique username for the new account. Must not already exist.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Unique email address for the new account. Must not already exist.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Password for the new account.
+</ParamField>
+
+<ParamField body="firstName" type="string">
+  User's first name. Stored on the user record and returned in the response.
+</ParamField>
+
+<ParamField body="lastName" type="string">
+  User's last name. Stored on the user record and returned in the response.
+</ParamField>
+
+## Response
+
+Returns `200 OK` with a JWT and the newly created user object.
+
+<ResponseField name="jwt" type="string">
+  Signed JWT to use as the Bearer token in subsequent authenticated requests. Expires after 1 day.
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  The newly created user object.
+
+  <Expandable title="user object" defaultOpen>
+    <ResponseField name="id" type="number">System-assigned numeric user ID.</ResponseField>
+    <ResponseField name="documentId" type="string">System-assigned Strapi v5 document ID.</ResponseField>
+    <ResponseField name="username" type="string">The registered username.</ResponseField>
+    <ResponseField name="email" type="string">The registered email address.</ResponseField>
+    <ResponseField name="confirmed" type="boolean">Whether the email address has been confirmed. Depends on the email confirmation setting in the Strapi admin panel.</ResponseField>
+    <ResponseField name="blocked" type="boolean">Whether the account has been blocked. Always `false` for new registrations.</ResponseField>
+    <ResponseField name="firstName" type="string">First name, or `null` if not provided.</ResponseField>
+    <ResponseField name="lastName" type="string">Last name, or `null` if not provided.</ResponseField>
+    <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+    <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url 'https://api.cafeacacias.com/api/auth/local/register' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "username": "aroma_del_huila",
+    "email": "juan.camilo@example.com",
+    "password": "CafeSeguro2026!",
+    "firstName": "Juan Camilo",
+    "lastName": "Herrera Prada"
+  }'
+```
+
+```json Request body
+{
+  "username": "aroma_del_huila",
+  "email": "juan.camilo@example.com",
+  "password": "CafeSeguro2026!",
+  "firstName": "Juan Camilo",
+  "lastName": "Herrera Prada"
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjMsImlhdCI6MTc0MjIwNDAwMCwiZXhwIjoxNzQyMjkwNDAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+  "user": {
+    "id": 63,
+    "documentId": "usr_aroma_huila_01",
+    "username": "aroma_del_huila",
+    "email": "juan.camilo@example.com",
+    "confirmed": true,
+    "blocked": false,
+    "firstName": "Juan Camilo",
+    "lastName": "Herrera Prada",
+    "createdAt": "2026-03-17T13:00:00.000Z",
+    "updatedAt": "2026-03-17T13:00:00.000Z"
+  }
+}
+```
+
+```json 400 – Email already taken
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ApplicationError",
+    "message": "Email already taken",
+    "details": {}
+  }
+}
+```
+
+```json 400 – Username already taken
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ApplicationError",
+    "message": "Username already taken",
+    "details": {}
+  }
+}
+```
+
+```json 400 – Validation error
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "password is a required field",
+    "details": {
+      "errors": [
+        {
+          "path": ["password"],
+          "message": "password is a required field",
+          "name": "ValidationError"
+        }
+      ]
+    }
+  }
+}
+```
+
+</ResponseExample>

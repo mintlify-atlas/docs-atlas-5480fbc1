@@ -1,0 +1,110 @@
+---
+title: "Category"
+description: "The Category data model groups products into menu sections."
+---
+
+The `Category` model organizes the product catalog into browseable sections — for example, "Espresso", "Cold Brew", or "Single Origin". Each product belongs to at most one category, and categories carry an explicit display order so the storefront can render them in the correct sequence.
+
+Categories support a **draft/publish workflow**, allowing new menu sections to be prepared before they go live.
+
+## Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | — | Auto-generated unique identifier |
+| `title` | string | Yes | Display name of the category |
+| `slug` | uid | Yes | URL-friendly identifier, auto-generated from `title` |
+| `order` | integer | Yes | Position in the navigation/menu (lower numbers appear first) |
+| `icon` | media (image) | Yes | Icon image displayed alongside the category in navigation |
+| `publishedAt` | datetime | — | Set when the category is published; `null` when in draft |
+
+## Relationships
+
+Categories are referenced by [Products](/models/product) via a one-to-one relation. A single category can be assigned to many products, but the relation is declared on the Product side.
+
+| Relation | Type | Referenced by | Description |
+|---|---|---|---|
+| (reverse) | One-to-many (implicit) | [Product](/models/product) | Products that belong to this category |
+
+## API response example
+
+```json
+{
+  "data": {
+    "id": 3,
+    "attributes": {
+      "title": "Single Origin",
+      "slug": "single-origin",
+      "order": 3,
+      "publishedAt": "2025-09-01T08:00:00.000Z",
+      "createdAt": "2025-08-25T11:30:00.000Z",
+      "updatedAt": "2025-09-01T08:00:00.000Z",
+      "icon": {
+        "data": {
+          "id": 12,
+          "attributes": {
+            "url": "/uploads/icon_single_origin_b8e3a1.svg",
+            "width": 48,
+            "height": 48,
+            "alternativeText": "Single Origin category icon"
+          }
+        }
+      }
+    }
+  },
+  "meta": {}
+}
+```
+
+A list response with multiple categories sorted by `order`:
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "attributes": {
+        "title": "Espresso",
+        "slug": "espresso",
+        "order": 1,
+        "publishedAt": "2025-09-01T08:00:00.000Z"
+      }
+    },
+    {
+      "id": 2,
+      "attributes": {
+        "title": "Latte",
+        "slug": "latte",
+        "order": 2,
+        "publishedAt": "2025-09-01T08:00:00.000Z"
+      }
+    },
+    {
+      "id": 3,
+      "attributes": {
+        "title": "Single Origin",
+        "slug": "single-origin",
+        "order": 3,
+        "publishedAt": "2025-09-01T08:00:00.000Z"
+      }
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 25, "pageCount": 1, "total": 3 }
+  }
+}
+```
+
+## Notes
+
+<Note>
+  **Display order** — The `order` field controls the sequence in which categories are shown in menus and navigation. Use `?sort=order:asc` in your API requests to retrieve categories in the intended display order.
+</Note>
+
+<Note>
+  **Icon is required** — Unlike most media fields in the API, `icon` is marked required. Every category must have an icon image before it can be saved. Provide a square SVG or PNG image for best results across screen sizes.
+</Note>
+
+<Note>
+  **Draft/publish workflow** — Categories follow the same draft/publish lifecycle as products. A category with `publishedAt: null` is a draft and will not be returned by public API requests. Publish a category before assigning products to it in a live storefront.
+</Note>

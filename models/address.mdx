@@ -1,0 +1,117 @@
+---
+title: "Address"
+description: "The Address data model stores a user's saved delivery addresses."
+---
+
+The `Address` model represents a named delivery address in a user's address book. Users can save multiple addresses (e.g., home, office) and select one at checkout. When an order is placed, the chosen address is copied as a JSON snapshot into the [Order](/models/order) record — the `Address` entry itself is never modified by the order process.
+
+Addresses do **not** use the draft/publish workflow — every saved address is immediately accessible.
+
+## Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | — | Auto-generated unique identifier |
+| `title` | string | Yes | Label for the address (e.g., "Home", "Office") |
+| `name` | string | Yes | Full name of the recipient at this address |
+| `address` | string | Yes | Street address line |
+| `city` | string | Yes | City name |
+| `state` | string | Yes | State or province |
+| `postalCode` | string | Yes | Postal or ZIP code |
+| `phone` | string | Yes | Contact phone number (excluding dial code) |
+| `dialCode` | string | No | International dialing code (e.g., `"+34"`) |
+| `user` | relation → User | No | The user this address belongs to |
+
+## Relationships
+
+| Relation | Type | Target model | Description |
+|---|---|---|---|
+| `user` | One-to-one | users-permissions.user | The account that owns this address |
+
+## API response example
+
+```json
+{
+  "data": {
+    "id": 31,
+    "attributes": {
+      "title": "Home",
+      "name": "María García López",
+      "address": "Calle Gran Vía 42, 3° B",
+      "city": "Madrid",
+      "state": "Community of Madrid",
+      "postalCode": "28013",
+      "phone": "612 345 678",
+      "dialCode": "+34",
+      "createdAt": "2025-10-12T09:30:00.000Z",
+      "updatedAt": "2025-10-12T09:30:00.000Z",
+      "user": {
+        "data": {
+          "id": 55,
+          "attributes": {
+            "username": "mgarcia",
+            "email": "m.garcia@example.com"
+          }
+        }
+      }
+    }
+  },
+  "meta": {}
+}
+```
+
+A user's full address book:
+
+```json
+{
+  "data": [
+    {
+      "id": 31,
+      "attributes": {
+        "title": "Home",
+        "name": "María García López",
+        "address": "Calle Gran Vía 42, 3° B",
+        "city": "Madrid",
+        "state": "Community of Madrid",
+        "postalCode": "28013",
+        "phone": "612 345 678",
+        "dialCode": "+34"
+      }
+    },
+    {
+      "id": 44,
+      "attributes": {
+        "title": "Office",
+        "name": "María García López",
+        "address": "Paseo de la Castellana 200",
+        "city": "Madrid",
+        "state": "Community of Madrid",
+        "postalCode": "28046",
+        "phone": "612 345 678",
+        "dialCode": "+34"
+      }
+    }
+  ],
+  "meta": {
+    "pagination": { "page": 1, "pageSize": 25, "pageCount": 1, "total": 2 }
+  }
+}
+```
+
+## Notes
+
+<Note>
+  **No draft/publish** — The `Address` collection type has `draftAndPublish` disabled. All address records are immediately live once created.
+</Note>
+
+<Note>
+  **User scoping** — Addresses are linked to a user via the `user` relation. API requests for addresses should always be filtered by the authenticated user's ID to prevent cross-user data exposure. For example: `GET /api/addresses?filters[user][id][$eq]=55`.
+</Note>
+
+<Note>
+  **Dial code** — The `dialCode` field stores the country calling code separately from the local `phone` number (e.g., `dialCode: "+34"`, `phone: "612 345 678"`). Concatenate them to form the full international number.
+</Note>
+
+<Note>
+  **Order snapshots** — When an order is placed, address data is copied into the [Order](/models/order) `addressShiping` field. Editing or deleting an `Address` record does not retroactively change existing orders.
+</Note>

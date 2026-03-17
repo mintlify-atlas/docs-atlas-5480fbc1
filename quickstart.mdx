@@ -1,80 +1,180 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Get from zero to your first API call in minutes."
 ---
 
-## Get started in three steps
+This guide walks you through cloning the Cafe Acacias Ecommerce API, configuring your environment, and making your first request.
 
-Get your documentation site running locally and make your first customization.
+<Steps>
+  <Step title="Check prerequisites">
+    Before you begin, make sure you have the following installed:
 
-### Step 1: Set up your local environment
+    - **Node.js** 18–22 (`node --version` to check)
+    - **npm** 6 or later (`npm --version` to check)
+    - **PostgreSQL** (recommended for production) or **SQLite** (zero-config for local development)
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    <Note>
+      SQLite requires no additional setup. To use it, set `DATABASE_CLIENT=sqlite` in your `.env` file. PostgreSQL is the default and recommended for production.
+    </Note>
+  </Step>
 
-### Step 2: Deploy your changes
+  <Step title="Clone the repository and install dependencies">
+    <CodeGroup>
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    ```bash npm
+    git clone https://github.com/JohanViancha/cafe-acacias-ecommerce.git
+    cd cafe-acacias-ecommerce
+    npm install
+    ```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    ```bash yarn
+    git clone https://github.com/JohanViancha/cafe-acacias-ecommerce.git
+    cd cafe-acacias-ecommerce
+    yarn install
+    ```
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    </CodeGroup>
+  </Step>
 
-### Step 3: Go live
+  <Step title="Configure environment variables">
+    Copy the example environment file and fill in your values:
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    ```bash
+    cp .env.example .env
+    ```
+
+    Open `.env` and replace every placeholder with a real value:
+
+    ```bash .env
+    HOST=0.0.0.0
+    PORT=1337
+    APP_KEYS="your-key-1,your-key-2"
+    API_TOKEN_SALT=your-api-token-salt
+    ADMIN_JWT_SECRET=your-admin-jwt-secret
+    TRANSFER_TOKEN_SALT=your-transfer-token-salt
+    JWT_SECRET=your-jwt-secret
+    ENCRYPTION_KEY=your-encryption-key
+    ```
+
+    <Warning>
+      Never commit your `.env` file to source control. All secrets must be unique, random strings. Use a tool like `openssl rand -base64 32` to generate each one.
+    </Warning>
+
+    If you are using PostgreSQL, also add your database connection variables:
+
+    ```bash .env (PostgreSQL)
+    DATABASE_CLIENT=postgres
+    DATABASE_HOST=127.0.0.1
+    DATABASE_PORT=5432
+    DATABASE_NAME=cafe_acacias
+    DATABASE_USERNAME=your-db-user
+    DATABASE_PASSWORD=your-db-password
+    ```
+
+    For SQLite (local development only):
+
+    ```bash .env (SQLite)
+    DATABASE_CLIENT=sqlite
+    DATABASE_FILENAME=.tmp/data.db
+    ```
+  </Step>
+
+  <Step title="Start the development server">
+    <CodeGroup>
+
+    ```bash npm
+    npm run dev
+    ```
+
+    ```bash yarn
+    yarn dev
+    ```
+
+    </CodeGroup>
+
+    Strapi starts on `http://localhost:1337`. The first run builds the admin panel, which may take a minute.
+
+    You should see output like:
+
+    ```
+    [2026-03-17 10:00:00.000] info: Strapi started successfully.
+
+    Local: http://0.0.0.0:1337
+    ```
+  </Step>
+
+  <Step title="Create your admin account">
+    Open `http://localhost:1337/admin` in your browser. On the first run, Strapi prompts you to create an administrator account.
+
+    Fill in your name, email, and a strong password, then click **Let's start**.
+
+    <Note>
+      The admin panel is for content management and configuration only. API consumers authenticate through the REST API using JWT tokens — see [Authentication](/authentication).
+    </Note>
+  </Step>
+
+  <Step title="Make your first API call">
+    With the server running, fetch the products list:
+
+    ```bash cURL
+    curl http://localhost:1337/api/products
+    ```
+
+    A successful response returns a paginated list of product entries:
+
+    ```json Response
+    {
+      "data": [
+        {
+          "id": 1,
+          "documentId": "abc123",
+          "name": "Ethiopian Yirgacheffe",
+          "price": 18.50,
+          "description": "A bright, floral single-origin coffee from Ethiopia.",
+          "createdAt": "2026-03-01T10:00:00.000Z",
+          "updatedAt": "2026-03-01T10:00:00.000Z",
+          "publishedAt": "2026-03-01T10:00:00.000Z"
+        }
+      ],
+      "meta": {
+        "pagination": {
+          "page": 1,
+          "pageSize": 25,
+          "pageCount": 1,
+          "total": 1
+        }
+      }
+    }
+    ```
+
+    <Note>
+      If the endpoint returns a `403 Forbidden` error, the `products` collection has not been made public yet. In the admin panel, go to **Settings → Roles → Public** and enable the `find` permission for the Products collection, then save.
+    </Note>
+  </Step>
+
+  <Step title="Build for production">
+    When you are ready to deploy, build the admin panel and start in production mode:
+
+    <CodeGroup>
+
+    ```bash npm
+    npm run build && npm start
+    ```
+
+    ```bash yarn
+    yarn build && yarn start
+    ```
+
+    </CodeGroup>
+
+    <Warning>
+      Production deployments require a PostgreSQL database. SQLite is not supported in multi-instance or serverless environments.
+    </Warning>
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
+Now that the server is running and you have made your first request, explore the rest of the API:
 
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+- [Authentication](/authentication) — register users, log in, and use JWT Bearer tokens to access protected endpoints.

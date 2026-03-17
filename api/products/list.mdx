@@ -1,0 +1,251 @@
+---
+title: "List products"
+description: "Retrieve a paginated list of all published products."
+api: "GET https://api.cafeacacias.com/api/products"
+---
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+## Query parameters
+
+### Filtering
+
+<ParamField query="filters[title][$contains]" type="string">
+  Return only products whose title contains the given substring. Case-insensitive.
+</ParamField>
+
+<ParamField query="filters[category][slug][$eq]" type="string">
+  Return only products belonging to the category with the given slug.
+</ParamField>
+
+<ParamField query="filters[stock][$gt]" type="number">
+  Return only products whose stock quantity is greater than the given value.
+</ParamField>
+
+### Sorting
+
+<ParamField query="sort[0]" type="string" default="createdAt:desc">
+  Sort field and direction. Supported values: `price:asc`, `price:desc`, `title:asc`, `title:desc`, `createdAt:desc`.
+</ParamField>
+
+### Pagination
+
+<ParamField query="pagination[page]" type="number" default="1">
+  Page number (1-indexed).
+</ParamField>
+
+<ParamField query="pagination[pageSize]" type="number" default="25">
+  Number of results per page. Maximum: 100.
+</ParamField>
+
+### Population
+
+<ParamField query="populate" type="string">
+  Comma-separated list of relations to include. Accepted values: `category`, `cover`, `wallpaper`, `gallery`.
+
+  Can also be repeated as multiple query parameters: `populate=category&populate=cover`.
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="object[]">
+  Array of product objects.
+
+  <Expandable title="product object">
+    <ResponseField name="id" type="number">
+      Unique numeric identifier for the product.
+    </ResponseField>
+    <ResponseField name="documentId" type="string">
+      Unique string identifier used in Strapi v5 document lookups.
+    </ResponseField>
+    <ResponseField name="title" type="string">
+      Display name of the product.
+    </ResponseField>
+    <ResponseField name="price" type="number">
+      Price in Colombian pesos (COP), without decimal places.
+    </ResponseField>
+    <ResponseField name="discount" type="number">
+      Optional discount percentage (0–100). `null` if no discount is active.
+    </ResponseField>
+    <ResponseField name="summary" type="string">
+      Short description of the product.
+    </ResponseField>
+    <ResponseField name="slug" type="string">
+      URL-safe unique identifier derived from the title.
+    </ResponseField>
+    <ResponseField name="video" type="string">
+      Optional URL to a product video. `null` if not set.
+    </ResponseField>
+    <ResponseField name="weight" type="number">
+      Weight in grams.
+    </ResponseField>
+    <ResponseField name="stock" type="number">
+      Current inventory count.
+    </ResponseField>
+    <ResponseField name="image" type="string">
+      Optional URL to an external image. `null` if not set.
+    </ResponseField>
+    <ResponseField name="cover" type="object">
+      Cover image media object. Present only when `populate=cover` is requested.
+
+      <Expandable title="media object">
+        <ResponseField name="id" type="number">Media entry ID.</ResponseField>
+        <ResponseField name="url" type="string">Relative path to the uploaded file.</ResponseField>
+        <ResponseField name="name" type="string">Original file name.</ResponseField>
+        <ResponseField name="width" type="number">Image width in pixels.</ResponseField>
+        <ResponseField name="height" type="number">Image height in pixels.</ResponseField>
+        <ResponseField name="formats" type="object">Strapi-generated responsive format variants (thumbnail, small, medium, large).</ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="gallery" type="object[]">
+      Array of gallery media objects. Present only when `populate=gallery` is requested.
+    </ResponseField>
+    <ResponseField name="category" type="object">
+      Related category object. Present only when `populate=category` is requested.
+
+      <Expandable title="category object">
+        <ResponseField name="id" type="number">Category ID.</ResponseField>
+        <ResponseField name="documentId" type="string">Category document ID.</ResponseField>
+        <ResponseField name="name" type="string">Category display name.</ResponseField>
+        <ResponseField name="slug" type="string">Category URL slug.</ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">ISO 8601 timestamp of when the product was created.</ResponseField>
+    <ResponseField name="updatedAt" type="string">ISO 8601 timestamp of the most recent update.</ResponseField>
+    <ResponseField name="publishedAt" type="string">ISO 8601 timestamp of when the product was published. `null` for drafts.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination metadata.
+
+  <Expandable title="meta object" defaultOpen>
+    <ResponseField name="pagination" type="object">
+      <Expandable title="pagination object" defaultOpen>
+        <ResponseField name="page" type="number">Current page number.</ResponseField>
+        <ResponseField name="pageSize" type="number">Number of items per page.</ResponseField>
+        <ResponseField name="pageCount" type="number">Total number of pages.</ResponseField>
+        <ResponseField name="total" type="number">Total number of matching records.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl --request GET \
+  --url 'https://api.cafeacacias.com/api/products?populate=category&populate=cover&pagination[page]=1&pagination[pageSize]=10&sort[0]=price:asc' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+```bash Filter by category
+curl --request GET \
+  --url 'https://api.cafeacacias.com/api/products?filters[category][slug][$eq]=espresso&filters[stock][$gt]=0&populate=cover' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": [
+    {
+      "id": 1,
+      "documentId": "a8f3k2m9p1",
+      "title": "Espresso Tostado Oscuro",
+      "price": 28000,
+      "discount": 10,
+      "summary": "Blend de origen colombiano con notas de chocolate oscuro y caramelo. Tostado oscuro ideal para espresso.",
+      "slug": "espresso-tostado-oscuro",
+      "video": null,
+      "weight": 250,
+      "stock": 42,
+      "image": null,
+      "cover": {
+        "id": 5,
+        "url": "/uploads/espresso_cover_4a2b9f.jpg",
+        "name": "espresso_cover.jpg",
+        "width": 1200,
+        "height": 800,
+        "formats": {
+          "thumbnail": { "url": "/uploads/thumbnail_espresso_cover_4a2b9f.jpg", "width": 156, "height": 104 },
+          "small": { "url": "/uploads/small_espresso_cover_4a2b9f.jpg", "width": 500, "height": 333 }
+        }
+      },
+      "category": {
+        "id": 2,
+        "documentId": "cat_espresso_01",
+        "name": "Espresso",
+        "slug": "espresso"
+      },
+      "createdAt": "2025-01-15T10:30:00.000Z",
+      "updatedAt": "2025-03-02T14:20:00.000Z",
+      "publishedAt": "2025-01-15T10:30:00.000Z"
+    },
+    {
+      "id": 2,
+      "documentId": "b9g4l3n0q2",
+      "title": "Café de Altura Sierra Nevada",
+      "price": 35000,
+      "discount": null,
+      "summary": "Café de origen único cultivado a 1800 msnm en la Sierra Nevada de Santa Marta. Notas cítricas y florales.",
+      "slug": "cafe-de-altura-sierra-nevada",
+      "video": "https://www.youtube.com/watch?v=example",
+      "weight": 250,
+      "stock": 18,
+      "image": null,
+      "cover": null,
+      "category": {
+        "id": 3,
+        "documentId": "cat_origen_01",
+        "name": "Café de Origen",
+        "slug": "cafe-de-origen"
+      },
+      "createdAt": "2025-02-01T09:00:00.000Z",
+      "updatedAt": "2025-02-01T09:00:00.000Z",
+      "publishedAt": "2025-02-01T09:00:00.000Z"
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 10,
+      "pageCount": 4,
+      "total": 32
+    }
+  }
+}
+```
+
+```json 401
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Missing or invalid credentials",
+    "details": {}
+  }
+}
+```
+
+```json 403
+{
+  "data": null,
+  "error": {
+    "status": 403,
+    "name": "ForbiddenError",
+    "message": "You are not allowed to perform this action",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>
